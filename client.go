@@ -96,12 +96,23 @@ func main() {
 				}()
 			}
 		} else if msg.MType == 3 {
-			if quit != nil {
+			if quit != nil && !isClosed(quit) {
 				fmt.Println("Stopping attack..")
 				close(quit)
 			}
 		}
 	}
+}
+
+// isClosed checks if quit channel is closed
+func isClosed(ch <-chan bool) bool {
+	select {
+	case <-ch:
+		return true
+	default:
+	}
+
+	return false
 }
 
 func sendExitMsg(conn net.Conn) {
