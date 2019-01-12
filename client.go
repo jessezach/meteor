@@ -96,8 +96,10 @@ func main() {
 				}()
 			}
 		} else if msg.MType == 3 {
-			fmt.Println("Stopping attack..")
-			close(quit)
+			if quit != nil {
+				fmt.Println("Stopping attack..")
+				close(quit)
+			}
 		}
 	}
 }
