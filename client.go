@@ -53,13 +53,15 @@ func killProcess(conn net.Conn) {
 func main() {
 	args := os.Args[1:]
 
+	if len(args) == 0 {
+		fmt.Println("Provide server host:<port>")
+		os.Exit(1)
+	}
+
 	conn, err := net.Dial("tcp", args[0])
 
 	if err != nil {
 		fmt.Println(err.Error())
-		os.Exit(1)
-	} else if len(args) == 0 {
-		fmt.Println("Provide server host:<port>")
 		os.Exit(1)
 	}
 
