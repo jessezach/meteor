@@ -24,8 +24,10 @@ type Message struct {
 }
 
 type Response struct {
-	MType   int
-	Content string
+	MType      int
+	Content    string
+	StatusCode string
+	Error      string
 }
 
 var quit chan bool
@@ -119,7 +121,7 @@ func isClosed(ch <-chan bool) bool {
 
 func sendExitMsg(conn net.Conn) {
 	fmt.Println("Exiting. Sending exit message to server..")
-	resp := Response{MType: 1, Content: "dead"}
+	resp := Response{MType: 1, Content: "dead", StatusCode: "", Error: ""}
 	m, _ := json.Marshal(resp)
 	conn.Write([]byte(m))
 }
@@ -138,12 +140,17 @@ func meteorBurst(url string, payload string, method string, headers []string, co
 		}
 
 		startTime := time.Now().UnixNano() / int64(time.Millisecond)
-		client.Do(req)
+		resp, err := client.Do(req)
 		endTime := time.Now().UnixNano() / int64(time.Millisecond)
-
 		responseTime := int(endTime - startTime)
-		resp := Response{MType: 2, Content: strconv.Itoa(responseTime)}
-		m, _ := json.Marshal(resp)
+		var payload Response
+		if err != nil {
+			payload = Response{MType: 2, Content: "", StatusCode: "", Error: err.Error()}
+		} else {
+			payload = Response{MType: 2, Content: strconv.Itoa(responseTime), StatusCode: strconv.Itoa(resp.StatusCode), Error: ""}
+		}
+
+		m, _ := json.Marshal(payload)
 		conn.Write([]byte(m))
 	} else {
 		fmt.Println(err.Error())
